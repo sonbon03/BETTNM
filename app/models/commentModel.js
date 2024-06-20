@@ -50,11 +50,11 @@ Comment.update = function (data, id, result) {
 }
 
 Comment.remove = function (id, result) {
-    db.query("DELETE FROM BINHLUAN WHERE id=?", id, function (err) {
+    db.query("DELETE FROM BINHLUAN WHERE id=?", id, function (err, comment) {
         if (err) {
             result(err);
         } else {
-            result();
+            result(comment);
         }
     })
 }

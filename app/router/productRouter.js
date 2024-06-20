@@ -19,7 +19,8 @@ module.exports = function (router) {
             next(new Error('No file uploaded!'));
             return;
         }
-        res.json(req.file?.path)
+
+        res.json(req.file.path)
 
     });
 }

@@ -14,13 +14,9 @@ const Product = function (product) {
 Product.getAll = function (result) {
     db.query("SELECT * FROM SANPHAM ORDER BY tensanpham DESC", function (err, product) {
         if (err) {
-            result(null);
+            result(err);
         } else {
-            if (product && product.length > 0) {
-                result(product);
-            } else {
-                result([]);
-            }
+            result(product);
         }
     });
 }
@@ -116,11 +112,11 @@ Product.create = function (data, result) {
 }
 
 Product.remove = function (id, result) {
-    db.query("DELETE FROM SANPHAM WHERE id = ?", id, function (err) {
+    db.query("DELETE FROM SANPHAM WHERE id = ?", id, function (err, product) {
         if (err) {
-            result(null, err);
+            result(err);
         } else {
-            result(`Xoa du lieu co id ${id} thanh cong`, null);
+            result(product);
         }
     })
 }
