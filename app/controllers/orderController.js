@@ -1,7 +1,8 @@
 const Order = require("../models/orderModel")
 
 exports.get_list = function (req, res) {
-    Order.getAll(function (data) {
+    const idAccount = req.params.idAccount;
+    Order.getAll(idAccount, function (data) {
         res.send(data)
     })
 }

@@ -1,6 +1,5 @@
 const db = require("../common/connect");
 const moment = require('moment');
-const Cart = require("../models/cartModel")
 
 const Order = function (order) {
     this.id = order.id;
@@ -14,28 +13,67 @@ const Order = function (order) {
     this.action = order.action;
 }
 
-Order.getAll = function (result) {
-    db.query("SELECT DONHANG.id, DONHANG.id_sanpham, DONHANG.id_donvivanchuyen, DONHANG.diachi, " +
-        "DONHANG.soluong, DONHANG.ngaydathang, DONHANG.thoigiandukien, DONHANG.thanhtien, DONHANG.trangthai, " +
-        "DONVIVANCHUYEN.tendonvivanchuyen, SANPHAM.anhsanpham, SANPHAM.tensanpham, SANPHAM.motasanpham FROM DONHANG " +
+Order.getAll = function (idAccount, result) {
+    db.query(
+        "SELECT DONHANG.id AS donhang_id, DONHANG_SANPHAM.id_sanpham, DONHANG_SANPHAM.soluong AS soluongmua, DONHANG.id_donvivanchuyen, DONHANG.diachi, " +
+        "DONHANG.soluong AS tongsoluong, DONHANG.ngaydathang, DONHANG.thoigiandukien, DONHANG.thanhtien, DONHANG.trangthai, " +
+        "DONVIVANCHUYEN.tendonvivanchuyen, SANPHAM.anhsanpham, SANPHAM.tensanpham, SANPHAM.motasanpham " +
+        "FROM DONHANG " +
         "INNER JOIN DONVIVANCHUYEN ON DONHANG.id_donvivanchuyen = DONVIVANCHUYEN.id " +
-        "INNER JOIN SANPHAM ON DONHANG.id_sanpham = SANPHAM.id",
-        function (err, order) {
+        "INNER JOIN DONHANG_SANPHAM ON DONHANG.id = DONHANG_SANPHAM.id_donhang " +
+        "INNER JOIN SANPHAM ON DONHANG_SANPHAM.id_sanpham = SANPHAM.id " +
+        "WHERE DONHANG.id_taikhoan = ?", [idAccount],
+        function (err, orders) {
             if (err) {
-                result(err);
+                result(err, null);
             } else {
-                result(order);
+                let groupedOrders = {};
+
+                orders.forEach(order => {
+                    let donhangId = order.donhang_id;
+
+                    if (!groupedOrders[donhangId]) {
+                        groupedOrders[donhangId] = {
+                            id: donhangId,
+                            id_donvivanchuyen: order.id_donvivanchuyen,
+                            diachi: order.diachi,
+                            soluong: order.tongsoluong,
+                            ngaydathang: order.ngaydathang,
+                            thoigiandukien: order.thoigiandukien,
+                            thanhtien: order.thanhtien,
+                            trangthai: order.trangthai,
+                            tendonvivanchuyen: order.tendonvivanchuyen,
+                            sanpham: [],
+                        };
+                    }
+
+                    groupedOrders[donhangId].sanpham.push({
+                        id_sanpham: order.id_sanpham,
+                        anhsanpham: order.anhsanpham,
+                        tensanpham: order.tensanpham,
+                        motasanpham: order.motasanpham,
+                        soluong: order.soluongmua,
+                        giaban: order.giaban,
+                    });
+                });
+
+
+                result(Object.values(groupedOrders));
             }
-        });
-}
+        }
+    );
+};
+
 
 Order.getOrderPaginate = function (page, pageSize, result) {
     const offset = (page - 1) * pageSize;
-    db.query("SELECT DONHANG.id, DONHANG.id_sanpham, DONHANG.id_donvivanchuyen, DONHANG.diachi, " +
+    db.query("SELECT DONHANG.id AS donhang_id, DONHANG_SANPHAM.id_sanpham, DONHANG_SANPHAM.soluong, DONHANG.id_donvivanchuyen, DONHANG.diachi, " +
         "DONHANG.soluong, DONHANG.ngaydathang, DONHANG.thoigiandukien, DONHANG.thanhtien, DONHANG.trangthai, " +
-        "DONVIVANCHUYEN.tendonvivanchuyen, SANPHAM.anhsanpham, SANPHAM.tensanpham, SANPHAM.motasanpham FROM DONHANG " +
+        "DONVIVANCHUYEN.tendonvivanchuyen, SANPHAM.anhsanpham, SANPHAM.tensanpham, SANPHAM.motasanpham " +
+        "FROM DONHANG " +
         "INNER JOIN DONVIVANCHUYEN ON DONHANG.id_donvivanchuyen = DONVIVANCHUYEN.id " +
-        "INNER JOIN SANPHAM ON DONHANG.id_sanpham = SANPHAM.id LIMIT ?, ?", [offset, pageSize],
+        "INNER JOIN DONHANG_SANPHAM ON DONHANG.id = DONHANG_SANPHAM.id_donhang " +
+        "INNER JOIN SANPHAM ON DONHANG_SANPHAM.id_sanpham = SANPHAM.id LIMIT ?, ?", [offset, pageSize],
         function (err, orders) {
             if (err) {
                 result(err, null);
@@ -157,16 +195,46 @@ Order.create = function (data, result) {
 };
 
 Order.getById = function (id, result) {
-    db.query("SELECT DONHANG.id, DONHANG.id_sanpham, DONHANG.id_donvivanchuyen, DONHANG.diachi, " +
-        "DONHANG.soluong, DONHANG.ngaydathang, DONHANG.thoigiandukien, DONHANG.thanhtien, DONHANG.trangthai, " +
-        "DONVIVANCHUYEN.tendonvivanchuyen, SANPHAM.anhsanpham, SANPHAM.tensanpham, SANPHAM.motasanpham FROM DONHANG " +
+    db.query("SELECT DONHANG.id AS donhang_id, DONHANG_SANPHAM.id_sanpham, DONHANG_SANPHAM.soluong as soluongmua, DONHANG_SANPHAM.giaban, DONHANG.id_donvivanchuyen, DONHANG.tennguoinhan, DONHANG.sodienthoai, DONHANG.diachi, DONHANG.diachi, " +
+        "DONHANG.soluong as soluongtong, DONHANG.ngaydathang, DONHANG.thoigiandukien, DONHANG.thanhtien, DONHANG.trangthai, " +
+        "DONVIVANCHUYEN.tendonvivanchuyen, SANPHAM.anhsanpham, SANPHAM.tensanpham, SANPHAM.motasanpham " +
+        "FROM DONHANG " +
         "INNER JOIN DONVIVANCHUYEN ON DONHANG.id_donvivanchuyen = DONVIVANCHUYEN.id " +
-        "INNER JOIN SANPHAM ON DONHANG.id_sanpham = SANPHAM.id WHERE DONHANG.id = ?", id,
-        function (err, order) {
+        "INNER JOIN DONHANG_SANPHAM ON DONHANG.id = DONHANG_SANPHAM.id_donhang " +
+        "INNER JOIN SANPHAM ON DONHANG_SANPHAM.id_sanpham = SANPHAM.id WHERE DONHANG.id = ?", id,
+        function (err, orders) {
             if (err) {
                 result(err);
             } else {
-                result(order);
+                let detailOrder = {};
+                orders.forEach((order) => {
+                    let detailOrderId = order.donhang_id;
+                    if (!detailOrder[detailOrderId]) {
+                        detailOrder[detailOrderId] = {
+                            id: order.donhang_id,
+                            id_donvivanchuyen: order.id_donvivanchuyen,
+                            tennguoinhan: order.tennguoinhan,
+                            sodienthoai: order.sodienthoai,
+                            diachi: order.diachi,
+                            soluong: order.soluongtong,
+                            ngaydathang: order.ngaydathang,
+                            thoigiandukien: order.thoigiandukien,
+                            thanhtien: order.thanhtien,
+                            trangthai: order.trangthai,
+                            sanpham: [],
+                        }
+                    }
+                    detailOrder[detailOrderId].sanpham.push({
+                        id_sanpham: order.id_sanpham,
+                        anhsanpham: order.anhsanpham,
+                        tensanpham: order.tensanpham,
+                        motasanpham: order.motasanpham,
+                        soluong: order.soluongmua,
+                        giaban: order.giaban,
+                    });
+
+                })
+                result(Object.values(detailOrder));
             }
         });
 }
