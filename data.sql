@@ -180,4 +180,35 @@ DELIMITER ;
 
 
 
+CREATE TABLE CITY (
+     id VARCHAR(36) PRIMARY KEY DEFAULT UUID(),
+     name VARCHAR(255) NOT NULL,
+),
+
+INSERT INTO CITY(name) VALUES("Hà Nội"),
+CREATE TABLE  DISTRICT (
+    id VARCHAR(36) PRIMARY KEY DEFAULT UUID(),
+    idCity VARCHAR(36) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    FOREIGN KEY (idCity) REFERENCES CITY(id)
+),
+
+INSERT INTO DISTRICT(idCity, name) VALUES ("fcd7f36a-352e-11ef-8d8b-acde48001122", "Cầu Giấy"), ("fcd7f36a-352e-11ef-8d8b-acde48001122", "Đống Đa"), ("fcd7f36a-352e-11ef-8d8b-acde48001122", "Bắc Từ Liêm")
+
+CREATE TABLE WARD (
+    id VARCHAR(36) PRIMARY KEY DEFAULT UUID(),
+    idDistrict VARCHAR(36) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    FOREIGN KEY (idDistrict) REFERENCES DISTRICT(id)
+)
+
+INSERT INTO WARD(idDistrict, name) VALUES ("17bbb3ce-352f-11ef-8d8b-acde48001122", "Dịch Vọng Hậu"), ("17bbb3ce-352f-11ef-8d8b-acde48001122", "Dịch Vọng"), ("17bbb3ce-352f-11ef-8d8b-acde48001122", "Quan Hoa"), ("17bbb3ce-352f-11ef-8d8b-acde48001122", "Nghĩa Đô"),
+                        ("17bbd30e-352f-11ef-8d8b-acde48001122", "Ngã Tư Sở"), ("17bbd30e-352f-11ef-8d8b-acde48001122", "Ô Chợ Dừa"), ("17bbd30e-352f-11ef-8d8b-acde48001122", "Khương Thượng"), ("17bbd30e-352f-11ef-8d8b-acde48001122", "Láng Thượng"),
+                        ("17bbd3ae-352f-11ef-8d8b-acde48001122", "Đông Ngạc"), ("17bbd3ae-352f-11ef-8d8b-acde48001122", "Xuân Đỉnh"), ("17bbd3ae-352f-11ef-8d8b-acde48001122", "Xuân Tảo"), ("17bbd3ae-352f-11ef-8d8b-acde48001122", "Phúc Diễn")
+
+
+
+
+
+
 

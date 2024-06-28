@@ -39,6 +39,7 @@ app.use(cookieParser());
 const router = express.Router();
 
 // Định nghĩa các router con
+require('./app/router/locationRouter')(router);
 require('./app/router/productRouter')(router);
 require('./app/router/orderRouter')(router);
 require('./app/router/cartRouter')(router);
