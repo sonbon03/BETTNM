@@ -15,14 +15,13 @@ const Order = function (order) {
 
 Order.getAll = function (idAccount, result) {
     db.query(
-        "SELECT DONHANG.id AS donhang_id, DONHANG_SANPHAM.id_sanpham, DONHANG_SANPHAM.soluong AS soluongmua, DONHANG.id_donvivanchuyen, DONHANG.diachi, " +
+        "SELECT DONHANG.id AS id_donhang, DONHANG_SANPHAM.id_sanpham, DONHANG_SANPHAM.soluong AS soluongmua, DONHANG.id_donvivanchuyen, DONHANG.diachi, " +
         "DONHANG.soluong AS tongsoluong, DONHANG.ngaydathang, DONHANG.thoigiandukien, DONHANG.thanhtien, DONHANG.trangthai, " +
         "DONVIVANCHUYEN.tendonvivanchuyen, SANPHAM.anhsanpham, SANPHAM.tensanpham, SANPHAM.motasanpham " +
         "FROM DONHANG " +
         "INNER JOIN DONVIVANCHUYEN ON DONHANG.id_donvivanchuyen = DONVIVANCHUYEN.id " +
         "INNER JOIN DONHANG_SANPHAM ON DONHANG.id = DONHANG_SANPHAM.id_donhang " +
-        "INNER JOIN SANPHAM ON DONHANG_SANPHAM.id_sanpham = SANPHAM.id " +
-        "WHERE DONHANG.id_taikhoan = ?", [idAccount],
+        "INNER JOIN SANPHAM ON DONHANG_SANPHAM.id_sanpham = SANPHAM.id ",
         function (err, orders) {
             if (err) {
                 result(err, null);
@@ -30,7 +29,7 @@ Order.getAll = function (idAccount, result) {
                 let groupedOrders = {};
 
                 orders.forEach(order => {
-                    let donhangId = order.donhang_id;
+                    let donhangId = order.id_donhang;
 
                     if (!groupedOrders[donhangId]) {
                         groupedOrders[donhangId] = {
@@ -57,6 +56,7 @@ Order.getAll = function (idAccount, result) {
                     });
                 });
 
+                // console.log(groupedOrders)
 
                 result(Object.values(groupedOrders));
             }
@@ -142,13 +142,14 @@ Order.create = function (data, result) {
             result(err);
             return;
         } else {
-            const sqlGetLastInsertedId = "SELECT id FROM DONHANG ORDER BY id DESC LIMIT 1";
+            const sqlGetLastInsertedId = "SELECT id FROM DONHANG ORDER BY createdAt DESC LIMIT 1";
             db.query(sqlGetLastInsertedId, function (err, rows) {
                 if (err) {
                     result(err);
                     return;
                 } else {
                     const orderId = rows[0].id;
+
                     const sqlOrderProduct = "INSERT INTO DONHANG_SANPHAM (id_donhang, id_sanpham, soluong, giaban) VALUES ?";
 
                     const valuesOrderProduct = product.map(item => [
